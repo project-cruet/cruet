@@ -3,7 +3,7 @@ version: 2.1
 executors:
   x86_64:
     docker:
-      - image: cimg/base:2020.01
+      - image: cimg/base:2022.03
   aarch64:
     machine: 
       image: ubuntu-2004:202101-01
