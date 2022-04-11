@@ -1,0 +1,37 @@
+version: 2.1
+
+executors:
+  x86_64:
+    docker:
+      - image: cimg/base:2022.03
+  aarch64:
+    machine: 
+      image: ubuntu-2004:202101-01
+    resource_class: arm.medium
+
+jobs:
+  test:
+    parameters:
+      arch:
+        type: executor
+    executor: << parameters.arch >>
+    steps:
+      - checkout
+      - run: sudo bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
+      - run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
+          echo 'source $HOME/.cargo/env' >> $BASH_ENV
+          source $HOME/.cargo/env
+          rustup toolchain install nightly --allow-downgrade --profile default
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy
+      - run: cargo build
+      - run: cargo test
+
+workflows:
+  all-tests:
+    jobs:
+      - test:
+          matrix:
+            parameters:
+              arch: [x86_64, aarch64]
