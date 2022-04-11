@@ -18,12 +18,11 @@ jobs:
       arch:
         type: executor
     executor: << parameters.arch >>
-    environment:
-      PATH: "$HOME/.cargo/bin/:$PATH"
     steps:
       - checkout
       - run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
+          echo 'source $HOME/.cargo/env' >> $BASH_ENV
           source $HOME/.cargo/env
           rustup toolchain install nightly --allow-downgrade --profile minimal --component clippy
       - rust/build:
