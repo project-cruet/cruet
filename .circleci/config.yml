@@ -20,6 +20,7 @@ jobs:
     executor: << parameters.arch >>
     steps:
       - checkout
+      - run: bash -c "$(wget -O - https://apt.llvm.org/llvm.sh)"
       - run: |
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
           echo 'source $HOME/.cargo/env' >> $BASH_ENV
