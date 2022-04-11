@@ -6,7 +6,7 @@ executors:
       - image: cimg/base:2020.01
   aarch64:
     machine: 
-      image: arm-default
+      image: ubuntu-2004:202101-01
     resource_class: arm.medium
 
 orbs:
@@ -19,7 +19,7 @@ jobs:
         type: executor
     executor: << parameters.arch >>
     environment:
-      PATH: "$HOME/.cargo/bin/$PATH"
+      PATH: "$HOME/.cargo/bin/:$PATH"
     steps:
       - checkout
       - run: |
