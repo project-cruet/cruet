@@ -19,10 +19,11 @@ jobs:
     executor: << parameters.arch >>
     steps:
       - checkout
-      - rust/clippy
-      - rust/test
+      - run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
       - rust/build:
           release: true
+      - rust/clippy
+      - rust/test
 
 workflows:
   all-tests:
