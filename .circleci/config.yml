@@ -1,0 +1,33 @@
+version: 2.1
+
+executors:
+  x86_64:
+    docker:
+      - image: cimg/base:2020.01
+  aarch64:
+    machine: 
+      image: arm-default
+
+orbs:
+  rust: circleci/rust@1.6.0
+
+jobs:
+  test:
+    parameters:
+      arch:
+        type: executor
+    executor: << parameters.arch >>
+    steps:
+      - checkout
+      - rust/clippy
+      - rust/test
+      - rust/build:
+          release: true
+
+workflows:
+  all-tests:
+    jobs:
+      - test:
+          matrix:
+            parameters:
+              arch: [x86_64, aarch64]
