@@ -9,9 +9,6 @@ executors:
       image: ubuntu-2004:202101-01
     resource_class: arm.medium
 
-orbs:
-  rust: circleci/rust@1.6.0
-
 jobs:
   test:
     parameters:
@@ -25,11 +22,11 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
           echo 'source $HOME/.cargo/env' >> $BASH_ENV
           source $HOME/.cargo/env
-          rustup toolchain install nightly --allow-downgrade --profile minimal --component clippy
-      - rust/build:
-          release: true
-      - rust/clippy
-      - rust/test
+          rustup toolchain install nightly --allow-downgrade --profile default
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy
+      - run: cargo build
+      - run: cargo test
 
 workflows:
   all-tests:
