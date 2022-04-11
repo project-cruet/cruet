@@ -20,7 +20,9 @@ jobs:
     executor: << parameters.arch >>
     steps:
       - checkout
-      - run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --channel=nightly
+      - run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --default-toolchain none -y
+          rustup toolchain install nightly --allow-downgrade --profile minimal --component clippy
       - rust/build:
           release: true
       - rust/clippy
