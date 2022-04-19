@@ -217,27 +217,30 @@ mod tests {
         let record = std::sync::Arc::new(std::sync::Mutex::new(std::vec::Vec::new()));
         let mut handles = std::vec::Vec::new();
         for i in 0..=100 {
-            let counter = counter.clone();
-            let head = head.clone();
-            let record = record.clone();
-            handles.push(std::thread::spawn(move || {
-                std::thread::sleep(std::time::Duration::from_millis(10 + 50 / (i+1) as u64));
-                for _ in 0..10 {
-                    if let Some(data) = Node::take(&head) {
-                        counter.fetch_add(data, Ordering::SeqCst);
-                    }
+            {
+                let counter = counter.clone();
+                let head = head.clone();
+                handles.push(std::thread::spawn(move || {
                     std::thread::yield_now();
-                }
-                std::thread::sleep(std::time::Duration::from_millis(10 + i as u64));
-                Node::push(&head, &record, i);
-            }));
+                    while counter.load(std::sync::atomic::Ordering::Acquire) < 5050 {
+                        if let Some(data) = Node::take(&head) {
+                            counter.fetch_add(data, Ordering::SeqCst);
+                        }
+                        std::thread::yield_now();
+                    }
+                }));
+            }
+            {
+                let head = head.clone();
+                let record = record.clone();
+                handles.push(std::thread::spawn(move || {
+                    std::thread::yield_now();
+                    Node::push(&head, &record, i);
+                }));
+            }
         }
         for i in handles {
             i.join().unwrap();
-        }
-        while let Some(data) = Node::take(&head) {
-            counter.fetch_add(data, Ordering::Relaxed);
-            std::thread::yield_now();
         }
         for i in record.lock().unwrap().iter() {
             unsafe {

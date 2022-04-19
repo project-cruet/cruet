@@ -19,7 +19,7 @@ pub use aarch64::*;
 /// Macro helper to make a syscall
 /// ## Example:
 /// ```rust
-/// use syscall_rs::*;
+/// use cruet_syscall::*;
 /// let _tid = unsafe { syscall!(nr::__NR_gettid) };
 /// ```
 #[macro_export]
