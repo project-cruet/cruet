@@ -212,6 +212,7 @@ mod tests {
 
     #[test]
     fn it_handles_concurrent_operations() {
+        let flag = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
         let counter = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let head = std::sync::Arc::new(ProtectedPtr::default());
         let record = std::sync::Arc::new(std::sync::Mutex::new(std::vec::Vec::new()));
@@ -220,8 +221,11 @@ mod tests {
             {
                 let counter = counter.clone();
                 let head = head.clone();
+                let flag = flag.clone();
                 handles.push(std::thread::spawn(move || {
-                    std::thread::yield_now();
+                    while !flag.load(Ordering::Acquire) {
+                        std::thread::yield_now();
+                    }
                     while counter.load(std::sync::atomic::Ordering::Acquire) < 5050 {
                         if let Some(data) = Node::take(&head) {
                             counter.fetch_add(data, Ordering::SeqCst);
@@ -233,12 +237,17 @@ mod tests {
             {
                 let head = head.clone();
                 let record = record.clone();
+                let flag = flag.clone();
                 handles.push(std::thread::spawn(move || {
+                    while !flag.load(Ordering::Acquire) {
+                        std::thread::yield_now();
+                    }
                     std::thread::yield_now();
                     Node::push(&head, &record, i);
                 }));
             }
         }
+        flag.store(true, Ordering::Release);
         for i in handles {
             i.join().unwrap();
         }
